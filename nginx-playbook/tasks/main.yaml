@@ -1,0 +1,35 @@
+---
+- name: nginx deploy
+  hosts: nginx
+  remote_user: root
+  tasks:
+  - name: generate Nginx site config
+    template:
+      src: ../templates/site.conf.j2
+      dest: /etc/nginx/conf.d/demo-nginx.paraggaur.net.conf
+      owner: root
+      group: root
+      mode: 0755
+  - name: ensure directory exists
+    file:
+      path: /var/www/demo-nginx.paraggaur.net/vault
+      recurse: yes
+      state: directory
+  - name: Generate index.html
+    template:
+      src: ../templates/index.html.j2
+      dest: /var/www/demo-nginx.paraggaur.net/index.html
+      owner: root
+      group: root
+      mode: 0755
+  - name: Generate index.html
+    template:
+      src: ../templates/index_vault.html.j2
+      dest: /var/www/demo-nginx.paraggaur.net/vault/index.html
+      owner: root
+      group: root
+      mode: 0755
+  - name: Generate SSL cert
+    shell: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout /etc/nginx/ssl/status-private.key -out /etc/nginx/ssl/status-cert.pem
+  - name: Enable Nginx service
+    service: name=nginx state=reloaded enabled=yes
